@@ -3,7 +3,7 @@ import cv2
 import cvzone
 import math
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # We can replace camera ID 0 with video path
 cap.set(3, 1280)  # propid=3 width
 cap.set(4, 720)  # propid=4 height
 
@@ -12,6 +12,7 @@ model = YOLO("yolo-weights/yolov8n.pt")
 while True:
     scuess, img = cap.read()
     results = model(img, stream=True)
+    names = model.names
 
     for r in results:
         boxes = r.boxes
@@ -24,7 +25,12 @@ while True:
 
             conf = math.ceil((box.conf[0] * 100)) / 100
 
-            cvzone.putTextRect(img, f"{conf}", (x1, y1 - 20))
+            class_id = int(box.cls[0])  # Class index
+            class_name = names[class_id]  # Get the class name
+
+            cvzone.putTextRect(
+                img, f"{class_name} {conf}", (max(0, x1), max(0, y1 - 20))
+            )
 
     cv2.imshow("Image", img)
     cv2.waitKey(1)
